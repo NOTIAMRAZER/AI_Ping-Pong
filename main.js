@@ -1,6 +1,8 @@
 img = "";
 right_wristX = 0;
 right_wristY = 0;
+score_right_wrist = 0;
+game_status = "";
 
 /*created by prashant shukla */
 var paddle2 =10,paddle1=10;
@@ -23,18 +25,33 @@ var ball = {
     dy:3
 }
 
+function preload(){
+  ball_touch_paddle = loadSound("ball_touch_paddel.wav");
+  missed = loadSound("missed.wav");
+}
+
 function setup(){
   canvas =  createCanvas(700, 600);
   canvas.parent('canvas');
   video = createCapture(VIDEO);
   video.size(700, 600);
-  //video.hide();
+  video.hide();
   poseNet = ml5.poseNet(video, modelLoaded);
   poseNet.on('pose', gotPoses);
 }
 
-function gotPoses(){
+function gotPoses(results){
+  if(results.length > 0){
+    right_wristX = results[0].pose.rightWrist.x;
+    right_wristY = results[0].pose.rightWrist.y;
+    score_right_wrist = results[0].pose.keypoints[10].score;
+    console.log(score_right_wrist);
+  }
+}
 
+function startGame(){
+  game_status = "start";
+  document.getElementById("status").innerHTML = "Game is Loading";
 }
 
 function modelLoaded(){
@@ -44,16 +61,25 @@ function modelLoaded(){
 
 function draw(){
 
- background(0); 
+  if(game_status == "start"){
+    background(0);
+    image(video, 0, 0, 700, 600);
 
- fill("black");
- stroke("black");
- rect(680,0,20,700);
+    fill("black");
+    stroke("black");
+    rect(680,0,20,700);
 
- fill("black");
- stroke("black");
- rect(0,0,20,700);
- 
+    fill("black");
+    stroke("black");
+    rect(0,0,20,700);
+
+
+if(score_right_wrist > 0.2){
+  fill("red");
+  stroke("red");
+  circle(right_wristX, right_wristY, 30);
+}
+
    //funtion paddleInCanvas call 
    paddleInCanvas();
  
@@ -81,6 +107,7 @@ function draw(){
    
    //function move call which in very important
     move();
+  }
 }
 
 
